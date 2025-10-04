@@ -12,6 +12,12 @@ const DataPortal = ({ onBack }) => {
   const csvInputRef = useRef(null);
   const datInputRef = useRef(null);
   const [uploadState, setUploadState] = useState({ status: "idle" });
+  const isProcessing =
+    uploadState.status === "reading" || uploadState.status === "uploading";
+  const loadingMessage =
+    uploadState.status === "reading"
+      ? "Loading..."
+      : "Loading...";
 
   const handleUploadClick = (ref) => {
     if (!ref.current) {
@@ -114,7 +120,7 @@ const DataPortal = ({ onBack }) => {
         onChange={(event) => handleFileChange(event, "dat")}
         className="sr-only"
       />
-      <div className="bg-black/50 border border-white/10 rounded-2xl max-w-3xl w-full p-8 backdrop-blur-md space-y-6">
+      <div className="bg-black/50 border border-white/10 rounded-2xl max-w-3xl w-full p-8 backdrop-blur-md space-y-6 relative">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-3xl font-semibold" data-aos="fade-up">
             Bring Your Own Data
@@ -134,13 +140,23 @@ const DataPortal = ({ onBack }) => {
         <div className="grid gap-4 sm:grid-cols-2" data-aos="fade-up" data-aos-delay="200">
           <button
             onClick={() => handleUploadClick(csvInputRef)}
-            className="bg-blue-400 text-white hover:bg-blue-500 px-4 py-3 rounded-lg font-semibold transition"
+            disabled={isProcessing}
+            className={`bg-blue-400 text-white px-4 py-3 rounded-lg font-semibold transition ${
+              isProcessing
+                ? "opacity-60 cursor-wait"
+                : "hover:bg-blue-500"
+            }`}
           >
             Upload CSV
           </button>
           <button
             onClick={() => handleUploadClick(datInputRef)}
-            className="bg-indigo-400 text-white hover:bg-indigo-500 px-4 py-3 rounded-lg font-semibold transition"
+            disabled={isProcessing}
+            className={`bg-indigo-400 text-white px-4 py-3 rounded-lg font-semibold transition ${
+              isProcessing
+                ? "opacity-60 cursor-wait"
+                : "hover:bg-indigo-500"
+            }`}
           >
             Upload .dat
           </button>
@@ -201,6 +217,14 @@ const DataPortal = ({ onBack }) => {
                 {uploadState.preview || "No preview available."}
               </pre>
             </div>
+          </div>
+        )}
+        {isProcessing && (
+          <div className="absolute inset-0 z-10 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4 rounded-2xl">
+            <div className="w-12 h-12 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <p className="text-white/90 text-sm tracking-wide uppercase">
+              {loadingMessage}
+            </p>
           </div>
         )}
       </div>
