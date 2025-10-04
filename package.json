@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://exoplanet-spaceapps.github.io/exoplanet-starter/",
+  "homepage": "https://exoplanet-spaceapps.github.io/frontend/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
