@@ -1,32 +1,57 @@
 import React, { useRef, useState } from "react";
 
+const simulateBackendUpload = (file, fileType) => {
+  console.info(`Simulating ${fileType.toUpperCase()} upload for`, file.name);
+
+  return new Promise((resolve) => {
+    setTimeout(resolve, 1200);
+  });
+};
+
 const DataPortal = ({ onBack }) => {
-  const fileInputRef = useRef(null);
+  const csvInputRef = useRef(null);
+  const datInputRef = useRef(null);
   const [uploadState, setUploadState] = useState({ status: "idle" });
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
+  const handleUploadClick = (ref) => {
+    if (!ref.current) {
+      return;
+    }
+
+    ref.current.value = "";
+    ref.current.click();
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = (event, fileType) => {
     const file = event.target.files?.[0];
 
     if (!file) {
       return;
     }
 
-    if (
-      file.type !== "text/csv" &&
-      !file.name.toLowerCase().endsWith(".csv")
-    ) {
+    const lowerName = file.name.toLowerCase();
+
+    if (fileType === "csv") {
+      if (file.type !== "text/csv" && !lowerName.endsWith(".csv")) {
+        setUploadState({
+          status: "error",
+          message: "Please choose a .csv file.",
+        });
+        return;
+      }
+    } else if (!lowerName.endsWith(".dat")) {
       setUploadState({
         status: "error",
-        message: "Please choose a .csv file.",
+        message: "Please choose a .dat file.",
       });
       return;
     }
 
-    setUploadState({ status: "reading" });
+    setUploadState({
+      status: "reading",
+      fileType,
+      fileName: file.name,
+    });
 
     const reader = new FileReader();
 
@@ -39,18 +64,35 @@ const DataPortal = ({ onBack }) => {
 
     reader.onload = (loadEvent) => {
       const text = loadEvent.target?.result ?? "";
-      const preview = text.split(/\r?\n/).slice(0, 5).join("\n");
       const rows = text
         .split(/\r?\n/)
         .map((row) => row.trim())
         .filter((row) => row.length > 0);
+      const preview = rows.slice(0, 5).join("\n");
 
-      setUploadState({
-        status: "success",
+      const baseState = {
+        status: "uploading",
+        fileType,
         fileName: file.name,
         rowCount: rows.length,
         preview,
-      });
+      };
+
+      setUploadState(baseState);
+
+      simulateBackendUpload(file, fileType)
+        .then(() => {
+          setUploadState({
+            ...baseState,
+            status: "success",
+          });
+        })
+        .catch(() => {
+          setUploadState({
+            status: "error",
+            message: "Our simulated upload failed. Please try again.",
+          });
+        });
     };
 
     reader.readAsText(file);
@@ -59,10 +101,17 @@ const DataPortal = ({ onBack }) => {
   return (
     <section className="h-[700px] flex items-center justify-center px-6 py-24 text-white relative">
       <input
-        ref={fileInputRef}
+        ref={csvInputRef}
         type="file"
         accept=".csv,text/csv"
-        onChange={handleFileChange}
+        onChange={(event) => handleFileChange(event, "csv")}
+        className="sr-only"
+      />
+      <input
+        ref={datInputRef}
+        type="file"
+        accept=".dat,text/plain"
+        onChange={(event) => handleFileChange(event, "dat")}
         className="sr-only"
       />
       <div className="bg-black/50 border border-white/10 rounded-2xl max-w-3xl w-full p-8 backdrop-blur-md space-y-6">
@@ -80,14 +129,20 @@ const DataPortal = ({ onBack }) => {
           </button>
         </div>
         <p className="text-white/80 max-w-2xl" data-aos="fade-up" data-aos-delay="150">
-          Upload a CSV from your own observations to explore orbital patterns and transit signals.
+          Upload a CSV or .dat file from your own observations to explore orbital patterns and transit signals.
         </p>
         <div className="grid gap-4 sm:grid-cols-2" data-aos="fade-up" data-aos-delay="200">
           <button
-            onClick={handleUploadClick}
+            onClick={() => handleUploadClick(csvInputRef)}
             className="bg-blue-400 text-white hover:bg-blue-500 px-4 py-3 rounded-lg font-semibold transition"
           >
             Upload CSV
+          </button>
+          <button
+            onClick={() => handleUploadClick(datInputRef)}
+            className="bg-indigo-400 text-white hover:bg-indigo-500 px-4 py-3 rounded-lg font-semibold transition"
+          >
+            Upload .dat
           </button>
           <button
             disabled
@@ -103,6 +158,15 @@ const DataPortal = ({ onBack }) => {
             data-aos-delay="250"
           >
             Reading your file...
+          </div>
+        )}
+        {uploadState.status === "uploading" && (
+          <div
+            className="bg-indigo-500/10 border border-indigo-400/30 text-indigo-100 rounded-lg p-4"
+            data-aos="fade-up"
+            data-aos-delay="250"
+          >
+            Simulating a backend upload for your {uploadState.fileType?.toUpperCase()} file...
           </div>
         )}
         {uploadState.status === "error" && (
@@ -123,9 +187,12 @@ const DataPortal = ({ onBack }) => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <p className="font-semibold">Loaded {uploadState.fileName}</p>
               <span className="text-sm text-emerald-200/80">
-                {uploadState.rowCount} data rows detected
+                {uploadState.rowCount} data rows detected in your simulated upload
               </span>
             </div>
+            <p className="text-sm text-emerald-200/70">
+              Simulated {uploadState.fileType?.toUpperCase()} file upload complete.
+            </p>
             <div>
               <p className="text-sm text-emerald-200/70 mb-2">
                 Preview (first rows):
