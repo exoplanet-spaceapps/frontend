@@ -32,7 +32,7 @@ const App = () => {
         >
           <source src={planetVideo} type="video/mp4" />
         </video>
-        <Navbar />
+        <Navbar onHome={() => setView("landing")} />
         {showLanding ? (
           <Hero onGetStarted={() => setView("data")} />
         ) : (

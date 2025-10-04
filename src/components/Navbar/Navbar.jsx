@@ -2,7 +2,7 @@ import React from "react";
 import Logo from "../../assets/logo.png";
 import Logo2 from "../../assets/unnamed-Photoroom.png"
 
-const Navbar = () => {
+const Navbar = ({ onHome }) => {
   return (
     <>
       <nav
@@ -11,10 +11,14 @@ const Navbar = () => {
       >
         <div className="container">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4 text-white font-bold text-2xl">
+            <button
+              type="button"
+              onClick={() => onHome && onHome()}
+              className="flex items-center gap-4 text-white font-bold text-2xl hover:opacity-90 focus:outline-none cursor-pointer bg-transparent"
+            >
               <img src={Logo2} alt="" className="w-10" />
               <span>Exoplanet Explorer</span>
-            </div>
+            </button>
             <div className="text-white hidden sm:block">
               <ul className="flex items-center gap-6 text-xl py-4 ">
                 <li>
