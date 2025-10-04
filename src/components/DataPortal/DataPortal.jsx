@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import PlanetDialog from "../Planet/PlanetDialog";
 
 const simulateBackendUpload = (file, fileType) => {
   console.info(`Simulating ${fileType.toUpperCase()} upload for`, file.name);
@@ -219,6 +220,21 @@ const DataPortal = ({ onBack }) => {
             </div>
           </div>
         )}
+        <div
+          className="border-t border-white/10 pt-6 space-y-4"
+          data-aos="fade-up"
+          data-aos-delay="280"
+        >
+          <div className="space-y-1 text-white/80">
+            <h3 className="text-lg font-semibold text-white">Sample Planet Insight</h3>
+            <p className="text-sm">
+              This preview pulls the first confirmed planet from the included NASA Kepler catalogue snapshot.
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <PlanetDialog />
+          </div>
+        </div>
         {isProcessing && (
           <div className="absolute inset-0 z-10 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4 rounded-2xl">
             <div className="w-12 h-12 border-2 border-white/30 border-t-white rounded-full animate-spin" />
